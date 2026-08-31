@@ -1,0 +1,18 @@
+export const exerciseCatalog = [
+    { id: "press-pecho", name: "Press de pecho", gif: "/ejercicios/0025.gif" },
+    { id: "tiron-pecho", name: "Tirón al pecho", gif: "/ejercicios/0245.gif" },
+    { id: "prensa-piernas", name: "Prensa de piernas", gif: "/ejercicios/0739.gif" },
+    { id: "apertura-pecho", name: "Apertura de pecho", gif: "/ejercicios/0596.gif" },
+    { id: "remo-sentado", name: "Remo sentado", gif: "/ejercicios/0239.gif" },
+    { id: "curl-femoral", name: "Curl femoral", gif: "/ejercicios/0586.gif" },
+    { id: "plancha", name: "Plancha", gif: "/ejercicios/5202.gif" },
+    { id: "press-hombros", name: "Press de hombros", gif: "/ejercicios/1299.gif" },
+    { id: "extension-piernas", name: "Extensión de piernas", gif: "/ejercicios/0585.gif" },
+    { id: "curl-biceps", name: "Curl de bíceps", gif: "/ejercicios/0025.gif" },
+    { id: "triceps-polea", name: "Tríceps en polea", gif: "/ejercicios/0200.gif" },
+    { id: "sentadilla-maquina", name: "Sentadilla en máquina", gif: "/ejercicios/0743.gif" },
+    { id: "gemelo-sentado", name: "Elevación de gemelo sentado", gif: "/ejercicios/0025.gif" },
+    { id: "abdominales-maquina", name: "Máquina de abdominales", gif: "/ejercicios/0595.gif" },
+    { id: "tiron-polea-cabeza", name: "Tirón polea a la cabeza", gif: "/ejercicios/0232.gif" },
+    { id: "fondos", name: "Fondos", gif: "/ejercicios/2318.gif" },
+]

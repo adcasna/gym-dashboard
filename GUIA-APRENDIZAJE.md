@@ -16,9 +16,9 @@ App PWA de seguimiento de ejercicios de gimnasio: listado con CRUD, contadores d
 6. ✅ Editar y borrar (CRUD completo, lifting state up)
 7. ✅ Componente Counter reutilizable (series/reps/kg)
 8. ✅ Persistencia (`localStorage`)
-9. ⬜ PWA (manifest, service worker, instalable/offline)
+9. ✅ PWA (manifest, service worker, instalable/offline) + despliegue (Git/GitHub/Netlify)
 10. ⬜ Estilos con Tailwind (toque profesional)
-11. ⬜ GIFs por ejercicio
+11. ✅ Catálogo de ejercicios con gif (selector + CRUD conectado)
 
 ---
 
@@ -175,6 +175,40 @@ useEffect(() => {
 Los dos mecanismos hacen trabajos opuestos y complementarios: el inicializador perezoso **lee, una sola vez, al arrancar**; el `useEffect` **escribe, repetidamente, cada vez que algo cambia**. Como `handleAddExercise`/`handleDeleteExercise`/`handleEditExercise` siempre crean un array nuevo (spread/filter/map), React detecta el cambio en cada uno y dispara el efecto automáticamente.
 
 Hecho: `exercises` en `App.jsx` se inicializa leyendo `localStorage` (con el array de ejemplo como respaldo la primera vez que se abre la app) y se guarda automáticamente en cada cambio.
+
+## 9. PWA y despliegue
+
+**Manifest + Service Worker**: dos piezas necesarias para que una web sea instalable. El manifest (JSON con nombre, iconos, colores, `display: "standalone"`) permite el botón de instalar; el Service Worker cachea archivos para que funcione offline. Se generan con el plugin `vite-plugin-pwa` en `vite.config.js`, sin escribir un Service Worker a mano.
+
+**Iconos** obligatorios en `public/` (192x192 y 512x512 PNG), referenciados en el manifest.
+
+**Instalación real vs. acceso directo**: en Android/Chrome, si el sitio cumple los requisitos de instalación (HTTPS, manifest válido, Service Worker registrado), Chrome genera un **WebAPK** — una app real reconocida por Android (aparece en el cajón de apps, multitarea, Ajustes), no solo un icono que abre una pestaña. Si falla algún requisito, cae a un simple acceso directo. Distintos navegadores (los de fabricante, tipo Samsung/Xiaomi) varían mucho en soporte — Chrome es la referencia para probar.
+
+**HTTPS es obligatorio** para Service Worker/instalación (con la excepción de `localhost`). Por eso un servidor local expuesto en la red de casa no sirve para probar la instalación real en el móvil — hace falta desplegar.
+
+**Git**: herramienta local que lleva el historial de versiones del proyecto (`git init`, `git add`, `git commit`). **GitHub**: aloja en la nube una copia de ese historial — sirve de backup, portfolio público, y punto de conexión para que otros servicios lean el repositorio.
+
+**Despliegue continuo**: conectar Netlify (o Vercel) directamente al repositorio de GitHub (Sites → Import an existing project) hace que cada `git push` dispare un build y despliegue automático en sus servidores — nada de compilar y arrastrar carpetas a mano. Un sitio así, ligado a una cuenta, es permanente (a diferencia de un despliegue anónimo tipo "Netlify Drop", que viene protegido con contraseña temporal hasta que se reclama con una cuenta — esa contraseña bloquea también las comprobaciones automáticas de Chrome, impidiendo la instalación real aunque el manifest esté perfecto).
+
+**`netlify.toml`** en `public/` (se copia a `dist/` en cada build) configura cabeceras HTTP que Netlify no adivina solo: el tipo de contenido correcto del manifest (`application/manifest+json`), caché agresiva para `/assets/*` (los archivos de Vite llevan hash en el nombre, así que es seguro cachearlos mucho tiempo), y una regla de redirección para cuando la app tenga rutas gestionadas por JavaScript (aún no es el caso).
+
+Hecho: PWA instalable confirmada en Android/Chrome (modo standalone real), desplegada de forma permanente vía GitHub + Netlify con auto-deploy en cada push.
+
+## 11. Catálogo de ejercicios con gif
+
+**Dato vs. componente**: el catálogo (`src/exerciseCatalog.js`) es solo un array de objetos (`{ id, name, gif }`) — no es un componente, no devuelve JSX, es el mismo papel que ya hacía el array `exercises` de ejemplo. El componente nuevo es `ExercisePicker`, que **recorre ese array con `.map()`** (mismo patrón exacto que `App` recorriendo `exercises`) y por cada uno pinta un botón con imagen y nombre, llamando a `onSelect(item)` cuando se hace click — el mismo patrón de callback-con-dato que `onEdit`.
+
+**Llamar una función vs. pasarla como referencia** — trampa clásica de JSX: `onClick={onSelect(item)}` ejecuta `onSelect(item)` inmediatamente durante el renderizado (una vez por cada vuelta del `.map()`), en vez de esperar al click. Hace falta envolverlo: `onClick={() => onSelect(item)}` — así se crea una función nueva que se ejecutará *cuando* se haga click, no antes. Se aplica siempre que un evento necesite pasar un argumento a la función real.
+
+**`<img>` es un elemento "vacío" (void element)**: nunca puede llevar contenido entre etiquetas, ni siquiera un espacio en blanco — `<img ...> </img>` revienta con "img is a void element tag and must neither have children". Se autocierra siempre: `<img src={...} alt={...} />`.
+
+**`public/` vs `src/` para assets**: los archivos dentro de `public/` se sirven tal cual, por su ruta (`/ejercicios/foo.gif`). Los archivos dentro de `src/` solo se procesan si se importan como módulo de JavaScript — una ruta de texto suelta apuntando a `src/...` puede parecer que funciona en desarrollo pero se rompe en la build de producción. Los gifs de ejercicios se guardan en `public/ejercicios/` por este motivo (mismo criterio que los iconos de la PWA).
+
+**Conectar el picker al formulario**: `App` guarda `selectedExercise` (state, el ejercicio elegido en ese momento) separado de `exercises` (state, la lista ya guardada). `<ExercisePicker onSelect={setSelectedExercise} />` vive en el JSX (hay que verlo y poder tocarlo); `selectedExercise.name`/`.gif` se leen en `handleAddExercise` (lógica) para construir el ejercicio nuevo — la separación de siempre entre "Zona 1" (JS/lógica/state) y "Zona 2" (JSX/lo que se pinta).
+
+**Decisión de diseño**: al editar un ejercicio ya guardado, solo se tocan series/reps/peso — el nombre y el gif no se pueden cambiar (si te equivocaste de ejercicio, se borra y se crea uno nuevo del catálogo). Por eso `ExerciseCard` ya no tiene ningún input de nombre en su modo edición.
+
+Hecho: `exerciseCatalog.js` (catálogo de ejercicios propios, con gif), `ExercisePicker.jsx` (selector visual), conectados al formulario de añadir en `App.jsx`; `ExerciseCard` muestra el gif guardado de cada ejercicio en su vista normal.
 
 ## Glosario
 

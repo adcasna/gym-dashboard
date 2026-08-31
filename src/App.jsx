@@ -2,22 +2,23 @@ import "./App.css";
 import ExerciseCard from "./ExerciseCard";
 import { useState, useEffect } from "react";
 import Counter from "./Counter";
+import ExercisePicker from "./ExercisePicker";
 function App() {
   const [exercises, setExercises] = useState(() => {
     const saved = localStorage.getItem("exercises");
     return saved ? JSON.parse(saved) : [
-    { id: 1, name: "press banca", series: 3, reps: 12, weight: 20 },
-    { id: 2, name: "jalon al pecho", series: 3, reps: 12, weight: 30 },
-    { id: 3, name: "press hombros", series: 3, reps: 12, weight: 10 },
-    { id: 4, name: "remo", series: 3, reps: 12, weight: 30 },
+    { id: 1, name: "Press de banca", gif:"/ejercicios/0025.gif", series: 3, reps: 12, weight: 20 },
+    { id: 2, name: "Tirón al pecho", gif:"/ejercicios/0245.gif", series: 3, reps: 12, weight: 30 },
+    { id: 3, name: "Press hombros", gif:"/ejercicios/1299.gif", series: 3, reps: 12, weight: 10 },
+    { id: 4, name: "Remo sentado", gif: "/ejercicios/0239.gif", series: 3, reps: 12, weight: 30 },
     ];
   });
 
+  const [selectedExercise, setSelectedExercise] = useState(null);
+
   useEffect(() => {
-    localStorage.setItem("exercises", JSON.stringify(exercises), [exercises]);
-  });
+    localStorage.setItem("exercises", JSON.stringify(exercises)) }, [exercises]);
   
-  const [exerciseName, setExerciseName] = useState("");
   const [exerciseSeries, setExerciseSeries] = useState(3);
   const [exerciseReps, setExerciseReps] = useState(10);
   const [exerciseWeight, setExerciseWeight] = useState(10);
@@ -25,21 +26,13 @@ function App() {
 
   function handleAddExercise(e) {
     e.preventDefault();
-    console.log(
-      exerciseName +
-        " " +
-        exerciseSeries +
-        " " +
-        exerciseReps +
-        " " +
-        exerciseWeight,
-    );
-    const nuevoEjercicio = {id: Date.now(), name:exerciseName, series:exerciseSeries, reps:exerciseReps, weight:exerciseWeight}
+    if (!selectedExercise) return;
+    const nuevoEjercicio = {id: Date.now(), name:selectedExercise.name, gif:selectedExercise.gif, series:exerciseSeries, reps:exerciseReps, weight:exerciseWeight}
     setExercises([...exercises, nuevoEjercicio]);
-    setExerciseName('');
     setExerciseSeries(3);
     setExerciseReps(10);
     setExerciseWeight(10);
+    setSelectedExercise(null);
   }
 
   function handleDeleteExercise(id){
@@ -61,9 +54,9 @@ function App() {
           <ul>
             {exercises.map((exercise) => (
               <li key={exercise.id}>
-                {" "}
                 <ExerciseCard
                   name={exercise.name}
+                  gif={exercise.gif}
                   series={exercise.series}
                   reps={exercise.reps}
                   weight={exercise.weight}
@@ -78,10 +71,7 @@ function App() {
 
       <section>
         <form key="exerciseForm" onSubmit={handleAddExercise}>
-          <input
-            value={exerciseName}
-            onChange={(e) => setExerciseName(e.target.value)}
-          />
+          <ExercisePicker onSelect={setSelectedExercise} />
           <Counter label="Series" value={exerciseSeries} onChange={setExerciseSeries} />
           <Counter label="Repeticiones" value={exerciseReps} onChange={setExerciseReps} />
           <Counter label="Peso (kg)" value={exerciseWeight} onChange={setExerciseWeight} step={2.5} />
