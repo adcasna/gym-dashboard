@@ -57,7 +57,6 @@ function App() {
   return (
     <>
       <section id="title">
-        <h1>Gym Dashboard</h1>
         <div>
           <ul>
             {exercises.map((exercise) => (
@@ -80,7 +79,7 @@ function App() {
       <button
         type="button"
         onClick={() => setShowAddForm(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-accent text-ink text-3xl font-bold shadow-lg flex items-center justify-center"
+        className="fixed bottom-6 left-6 w-14 h-14 rounded-full bg-accent text-ink text-3xl font-bold shadow-lg flex items-center justify-center"
       >
         +
       </button>     
