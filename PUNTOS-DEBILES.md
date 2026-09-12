@@ -1,33 +1,38 @@
-# Puntos débiles — seguimiento
+# Puntos débiles — dónde estoy ahora
 
-Documento vivo para detectar patrones en lo que cuesta más, y así reforzarlo antes de que sea un problema en una entrevista o en el trabajo. Se actualiza cuando me preguntas algo, te quedas atascado, o "la lías" con algo que ya habíamos visto.
+Esto no es un registro de incidentes con fecha — es un espejo: en qué áreas todavía no tengo soltura, para saber qué repasar antes de un CRUD nuevo o una entrevista. Se actualiza cambiando el nivel cuando de verdad mejora, no añadiendo líneas nuevas cada vez que pasa algo.
 
-**Importante — qué SÍ va aquí y qué NO:**
-- ✅ Va aquí: entender *conceptos* (para qué sirve el state, cuándo un componente se re-renderiza, por qué usar props en vez de variables globales, cuándo usar `key` en una lista, etc.) y *patrones de error recurrentes* (ej. olvidar que el state es asíncrono, mutar el array en vez de crear uno nuevo).
-- ❌ No va aquí: no recordar la sintaxis exacta de un comando de terminal o un flag de una librería. Eso se busca, no se memoriza — es normal incluso con años de experiencia.
-
-Regla rápida para clasificar algo: si el fallo es "no sabía que había que hacerlo así" → es conceptual, va aquí. Si es "sabía que había que hacerlo así pero no recordaba la sintaxis exacta" → no va aquí, no es relevante.
-
-## Categorías que vamos a vigilar especialmente (por ser lo que más se pregunta en entrevistas React)
-
-- Flujo de datos (props hacia abajo, eventos hacia arriba)
-- Cuándo y por qué se re-renderiza un componente
-- Inmutabilidad del state (no mutar arrays/objetos directamente)
-- `useEffect`: dependencias y cuándo se dispara
-- Listas y `key`
-- Formularios controlados vs no controlados
+**Niveles**: 🔴 flojo, todavía me cuesta de verdad · 🟡 lo entiendo pero se me olvida bajo presión · 🟢 ya lo tengo interiorizado.
 
 ---
 
-## Registro
+### 🟡 Estructura de un componente: qué va en la lógica y qué va en el JSX
+Al principio metía `useState` u otras declaraciones dentro del `return`, como si formaran parte del marcado. Ya lo tengo bastante claro (todo lo que es JS normal va antes del `return`), pero conviene revisarlo si vuelve a pasar al empezar un componente nuevo desde cero.
 
-| Fecha | Tema | Qué pasó | Estado |
-|---|---|---|---|
-| 2026-08-26 | Estructura de un componente (lógica vs JSX) | Escribió `const [exercises, setExercises] = useState(...)` dentro del `return`/JSX en vez de en el cuerpo de la función, antes del `return`. Confundía además `.map()` con `.forEach()` (no tenía claro que `.map()` construye y devuelve un array nuevo, necesario para que encaje dentro de `{}` en JSX). | En progreso — reexplicado con ejemplo aislado, pendiente ver si lo aplica solo la próxima vez que declare state o use listas. |
-| 2026-08-26 | `key`: qué es y valor de un atributo/prop | Al mover `key` de `ExerciseCard` a `li`, escribió `key={<ExerciseCard key={exercise.id}/>}` (dos veces: primero probó con `id=`, luego con `key=`) — anidó un componente entero como valor del atributo, en vez de un dato simple (`exercise.id`). También creyó inicialmente que `key` era el equivalente en React de `id` de HTML (no lo es: `id` sigue existiendo igual, `key` es un concepto nuevo solo para listas/`.map()`, sin equivalente HTML). | Resuelto — a la tercera lo corrigió solo (`key={exercise.id}` en el `li`), sin que se lo diéramos ya escrito. |
-| 2026-08-26 | Atributos JSX: van en la etiqueta de apertura, no como contenido | Escribió `onSubmit={...}` como si fuera un hijo más, suelto entre `<button>` y `</form>`, en vez de como atributo dentro de `<form ...>`. | Resuelto tras explicar la anatomía `<tag attr={valor}>hijos</tag>`; lo aplicó bien a la primera cuando se le dio la regla general. |
-| 2026-08-26 | Evento (`e`) vs state: de dónde vienen los datos | En `handleAddExercise(e)`, construyó el nuevo objeto leyendo `e.name`, `e.series`, `e.reps`, `e.weight` — el evento de submit no lleva esos datos, solo información del propio envío. Los valores reales ya estaban en sus states (`exerciseName`, etc.), actualizados por los `onChange` de cada input; de hecho los usaba bien dos líneas arriba en un `console.log` y no conectó que era la misma fuente de datos. | Resuelto tras señalarle que ya tenía la respuesta en su propio código; lo entendió y confirmó ("si que habíamos hecho el set y por eso lo tenemos"). Vigilar si vuelve a confundir "evento" con "dato" en el futuro (ej. al leer `e.target` en otros contextos). |
-| 2026-08-26 | Recurrencia: "evento nativo" vs "valor plano" en un callback propio | Al usar `<Counter>` (que llama a su `onChange` con un número ya limpio, no con un evento), reutilizó el patrón antiguo `onChange={(e) => setX(e.target.value)}` en vez de `onChange={setX}` — mismo tipo de confusión que con `e.name` en el formulario de añadir, ahora en un componente propio en vez de un evento nativo del DOM. Provocó `Cannot read properties of undefined (reading 'value')` al pulsar +/-. | Explicado señalando el código exacto; pendiente ver si la próxima vez que diseñe un callback propio recuerda por sí solo que "lo que llega depende de lo que el propio componente decide enviar", no siempre es un evento. |
-| 2026-08-26 | Editar (CRUD): dónde vive el state por tarjeta, y callbacks que llevan datos | Bloqueo grande, el más costoso hasta ahora. Varias confusiones encadenadas: (1) puso `isEditing` y los campos de edición en `App` en vez de en `ExerciseCard` — no tenía claro que cada instancia de un componente (una tarjeta por ejercicio) tiene su propia copia aislada de su state local, que es justo lo que hace posible que cada tarjeta se edite de forma independiente sin lógica extra; (2) inicializó el state de edición desde el state del formulario de *añadir* (`exerciseName`) en vez de desde los props del propio ejercicio (`name`); (3) no distinguía el botón "Editar" (acción 100% local: `setIsEditing(true)`) del callback `onEdit` (avisar a `App` con los datos nuevos) — los tenía mezclados en el mismo botón; (4) no veía dónde se construye el objeto de campos actualizados (se construye en `ExerciseCard`, al pulsar "Guardar", que ni siquiera existía todavía en su código cuando ya se estaba hablando de él — desajuste de expectativas explicado mal por mi parte, no por falta de comprensión suya). | En progreso — se le dio el archivo `ExerciseCard.jsx` completo de referencia con explicación pieza a pieza, en vez de seguir con pasos abstractos. Vigilar de cerca la próxima vez que aparezca "state por instancia de componente" o un callback que además de avisar, lleva datos. |
-| 2026-08-31 | Llamar una función vs. pasarla como referencia en un evento | En `ExercisePicker`, escribió `onClick={onSelect(item)}` en vez de `onClick={() => onSelect(item)}` — ejecuta la función inmediatamente durante el render (una vez por cada vuelta del `.map()`) en vez de esperar al click. Ya había usado el patrón correcto antes sin problema (`onDelete={() => handleDeleteExercise(exercise.id)}`), así que no es que no conozca la solución, es que al escribir un componente nuevo desde cero no conectó que era el mismo caso. | Resuelto tras señalar el paralelismo con `onDelete`, que ya dominaba. Vigilar si vuelve a aparecer en componentes nuevos que no sean una simple repetición de uno ya hecho. |
-| 2026-08-31 | Confundir el state "temporal/de formulario" con el dato "permanente/de la lista" | Al conectar el picker, cambió `name={exercise.name}` por `name={selectedExercise.name}` dentro del `.map()` que pinta la lista de ejercicios *ya guardados* — mezclando `selectedExercise` (qué hay elegido ahora mismo en el formulario de añadir, un solo valor compartido) con `exercise` (el dato ya guardado y fijo de cada tarjeta, uno distinto por vuelta del `.map()`). Provocó `Cannot read properties of null` en cuanto `selectedExercise` volvía a `null` tras guardar. | Resuelto, explicado con la distinción "temporal para un formulario" vs. "permanente ya guardado en la lista". Vigilar si reaparece la próxima vez que haya dos states con datos de forma parecida pero papeles distintos. |
+### 🔴 Imaginar la estructura HTML/CSS antes de maquetar
+Esta es la que más se repite: no me sale de forma natural pensar "esto va en un flex con gap-3" o visualizar cómo dividir algo en filas/columnas antes de escribirlo. Necesito seguir copiando y adaptando ejemplos reales (propios o de librerías como HyperUI/Preline) en vez de intentar generarlo de cero, y prestar atención a qué combinaciones de clases se repiten (flex/grid + gap + padding) para que con el tiempo salgan solas.
+
+### 🟡 Evento (`e`) vs. dato real
+Varias veces intenté leer datos directamente del evento (`e.nombreDelCampo`) cuando el dato de verdad estaba en el state. Ya lo reconozco cuando me lo señalan, pero todavía no lo detecto siempre por mi cuenta antes de escribirlo mal.
+
+### 🟡 Pasar una función como referencia vs. llamarla ya
+Se me olvida envolver en `() => ...` cuando un evento necesita pasar un argumento (`onClick={fn(x)}` en vez de `onClick={() => fn(x)}`) — sobre todo en componentes nuevos que no son una copia directa de uno que ya me había salido bien antes.
+
+### 🔴 Decidir en qué componente vive un `state`
+El bloqueo más grande hasta ahora: no tenía claro cuándo un `state` debe vivir en el componente padre (compartido) y cuándo debe vivir en el hijo (una copia por instancia). Es el área a la que más atención debo prestar en el próximo proyecto — antes de escribir un `useState`, pararme a pensar explícitamente "¿esto es de uno solo, o de todos a la vez?".
+
+### 🟢 `useEffect` y su array de dependencias
+Al principio confundía "sin array" (se ejecuta siempre) con "array vacío" (una sola vez). Con la práctica de la persistencia en `localStorage` ya lo aplico bien.
+
+### 🟡 Confiar en mi propio criterio de diseño (Tailwind/CSS)
+No es solo cuestión de sintaxis — me falta confianza para tomar decisiones de espaciado/tamaño sin que me las den ya resueltas. Está mejorando a base de ver ejemplos y tocar valores para ver el efecto en vivo, pero todavía no me sale como primera intuición.
+
+---
+
+## Categorías a vigilar de cara a entrevistas (independiente de mi nivel actual)
+
+- Flujo de datos (props hacia abajo, eventos/callbacks hacia arriba)
+- Cuándo y por qué se re-renderiza un componente
+- Inmutabilidad del state (no mutar arrays/objetos directamente)
+- Listas y `key`
+- Formularios controlados vs no controlados

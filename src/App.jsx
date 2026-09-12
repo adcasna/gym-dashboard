@@ -1,8 +1,8 @@
-import "./App.css";
 import ExerciseCard from "./ExerciseCard";
 import { useState, useEffect } from "react";
 import Counter from "./Counter";
 import ExercisePicker from "./ExercisePicker";
+import Modal from "./Modal";
 function App() {
   const [exercises, setExercises] = useState(() => {
     const saved = localStorage.getItem("exercises");
@@ -15,7 +15,7 @@ function App() {
   });
 
   const [selectedExercise, setSelectedExercise] = useState(null);
-
+  const [showAddForm, setShowAddForm] = useState(false);
   useEffect(() => {
     localStorage.setItem("exercises", JSON.stringify(exercises)) }, [exercises]);
   
@@ -33,6 +33,14 @@ function App() {
     setExerciseReps(10);
     setExerciseWeight(10);
     setSelectedExercise(null);
+  }
+
+  function handleCancelAdd() {
+    setSelectedExercise(null);
+    setExerciseSeries(3);
+    setExerciseReps(10);
+    setExerciseWeight(10);
+    setShowAddForm(false);
   }
 
   function handleDeleteExercise(id){
@@ -69,15 +77,26 @@ function App() {
         </div>
       </section>
 
-      <section>
+      <button
+        type="button"
+        onClick={() => setShowAddForm(true)}
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-accent text-ink text-3xl font-bold shadow-lg flex items-center justify-center"
+      >
+        +
+      </button>     
+
+    <Modal open={showAddForm} onClose={() => setShowAddForm(false)} title="Nuevo ejercicio">
         <form key="exerciseForm" onSubmit={handleAddExercise}>
           <ExercisePicker onSelect={setSelectedExercise} />
           <Counter label="Series" value={exerciseSeries} onChange={setExerciseSeries} />
           <Counter label="Repeticiones" value={exerciseReps} onChange={setExerciseReps} />
           <Counter label="Peso (kg)" value={exerciseWeight} onChange={setExerciseWeight} step={2.5} />
-          <button type="submit">Guardar</button>
+          <div className="flex gap-3 mt-4">
+            <button type="button" onClick={handleCancelAdd} className="flex-1 py-2 rounded-lg bg-background text-ink font-medium">Cancelar</button>
+            <button type="submit" className="flex-1 py-2 rounded-lg bg-accent text-ink font-heading font-semibold">Guardar</button>
+          </div>
         </form>
-      </section>
+    </Modal>
     </>
   );
 }

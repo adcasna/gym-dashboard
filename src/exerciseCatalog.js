@@ -8,7 +8,7 @@ export const exerciseCatalog = [
     { id: "plancha", name: "Plancha", gif: "/ejercicios/5202.gif" },
     { id: "press-hombros", name: "Press de hombros", gif: "/ejercicios/1299.gif" },
     { id: "extension-piernas", name: "Extensión de piernas", gif: "/ejercicios/0585.gif" },
-    { id: "curl-biceps", name: "Curl de bíceps", gif: "/ejercicios/0025.gif" },
+    { id: "curl-biceps", name: "Curl de bíceps", gif: "/ejercicios/0285.gif" },
     { id: "triceps-polea", name: "Tríceps en polea", gif: "/ejercicios/0200.gif" },
     { id: "sentadilla-maquina", name: "Sentadilla en máquina", gif: "/ejercicios/0743.gif" },
     { id: "gemelo-sentado", name: "Elevación de gemelo sentado", gif: "/ejercicios/0025.gif" },
