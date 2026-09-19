@@ -10,8 +10,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Gym Dashboard',
-        short_name: 'GymDash',
+        name: 'AC Gym Dashboard',
+        short_name: 'AC Gym',
         description: 'Seguimiento de ejercicios de gimnasio',
         theme_color: '#12141a',
         background_color: '#12141a',
