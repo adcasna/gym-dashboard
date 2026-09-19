@@ -11,7 +11,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       manifest: {
         name: 'AC Gym Dashboard',
-        short_name: 'AC Gym',
+        short_name: 'AC Gym Dashboard',
         description: 'Seguimiento de ejercicios de gimnasio',
         theme_color: '#12141a',
         background_color: '#12141a',
