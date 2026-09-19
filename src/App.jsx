@@ -33,6 +33,7 @@ function App() {
     setExerciseReps(10);
     setExerciseWeight(10);
     setSelectedExercise(null);
+    setShowAddForm(false);
   }
 
   function handleCancelAdd() {
@@ -58,19 +59,18 @@ function App() {
     <>
       <section id="title">
         <div>
-          <ul>
+          <ul className="pb-24">
             {exercises.map((exercise) => (
-              <li key={exercise.id}>
-                <ExerciseCard
-                  name={exercise.name}
-                  gif={exercise.gif}
-                  series={exercise.series}
-                  reps={exercise.reps}
-                  weight={exercise.weight}
-                  onEdit={(camposActualizados) => handleEditExercise(exercise.id, camposActualizados)}
-                  onDelete={() => handleDeleteExercise(exercise.id)}
-                ></ExerciseCard>
-              </li>
+              <ExerciseCard
+                key={exercise.id}
+                name={exercise.name}
+                gif={exercise.gif}
+                series={exercise.series}
+                reps={exercise.reps}
+                weight={exercise.weight}
+                onEdit={(camposActualizados) => handleEditExercise(exercise.id, camposActualizados)}
+                onDelete={() => handleDeleteExercise(exercise.id)}
+              />
             ))}
           </ul>
         </div>
@@ -86,7 +86,7 @@ function App() {
 
     <Modal open={showAddForm} onClose={() => setShowAddForm(false)} title="Nuevo ejercicio">
         <form key="exerciseForm" onSubmit={handleAddExercise}>
-          <ExercisePicker onSelect={setSelectedExercise} />
+          <ExercisePicker onSelect={setSelectedExercise} selectedId={selectedExercise?.id} />
           <Counter label="Series" value={exerciseSeries} onChange={setExerciseSeries} />
           <Counter label="Repeticiones" value={exerciseReps} onChange={setExerciseReps} />
           <Counter label="Peso (kg)" value={exerciseWeight} onChange={setExerciseWeight} step={2.5} />
